@@ -75,7 +75,7 @@ def get_number(chat_id):
 		return False
 
 def create_user(chat_id):
-	cursor.execute("INSERT INTO users(user_id) VALUES (%s)", (chat_id,))
+	cursor.execute("INSERT INTO users(user_id) VALUES ({})".format(chat_id))
 	conn.commit()
 	return True
 
@@ -83,7 +83,6 @@ def check_location(chat_id):
 	cursor.execute("SELECT `location_date`, `latitude`, `longitude` from users WHERE user_id={}".format(chat_id))
 	a = cursor.fetchone()
 	if a:
-		print(a) #test
 		if a[0]:
 			date_in_base = a[0] + timedelta(minutes=1000)
 			date = datetime.datetime.utcnow() + timedelta(hours=5)
@@ -106,14 +105,21 @@ def set_location(chat_id, latitude, longitude):
 def get_elements(chat_id, type_element, page):
 	dictionary = {"moyka":3,
 				  "zapravka":2,
-				  "serv9ce":1}
-	page -=1
-	page *= 5
-	print(page)
+				  "service":1}
+
+	pagination = page*5
 	if type_element == "all":
-		cursor.execute("SELECT *, (select latitude from carserv.users WHERE user_id={}) as l1, (select longitude from carserv.users WHERE user_id={}) as l2  FROM services right join location_connection on services.location_id=location_connection.id order by (abs(l1-latitude)+abs(l2-longitude)) asc limit {}, 5;".format(chat_id, chat_id, page))
+		cursor.execute("SELECT *, (select latitude from carserv.users WHERE user_id={}) as l1, (select longitude from carserv.users WHERE user_id={}) as l2  FROM services right join location_connection on services.location_id=location_connection.id order by (abs(l1-latitude)+abs(l2-longitude)) asc limit {}, 5;".format(chat_id, chat_id, pagination))
 	else:
-		cursor.execute("SELECT *, (select latitude from carserv.users WHERE user_id={}) as l1, (select longitude from carserv.users WHERE user_id={}) as l2  FROM services cross join location_connection on services.location_id=location_connection.id having service_type={} order by (abs(l1-latitude)+abs(l2-longitude)) asc limit {}, 5;".format(chat_id, chat_id, dictionary[type_element], page))
+		cursor.execute("SELECT *, (select latitude from carserv.users WHERE user_id={}) as l1, (select longitude from carserv.users WHERE user_id={}) as l2  FROM services cross join location_connection on services.location_id=location_connection.id having service_type={} order by (abs(l1-latitude)+abs(l2-longitude)) asc limit {}, 5;".format(chat_id, chat_id, dictionary[type_element], pagination))
+	a = cursor.fetchall()
+	if a:
+		return a
+	else:
+		return False
+
+def get_info(product_id):
+	cursor.execute("SELECT * FROM carserv.service_connection left join services on services.id=service_connection.service_id left join service_type on service_type.id=type_id_service left join fueling_types on fueling_types.id=type_id_fueling left join carwash_types on carwash_types.id=type_id_carwash where service_id={};".format(product_id))
 	a = cursor.fetchall()
 	if a:
 		return a
