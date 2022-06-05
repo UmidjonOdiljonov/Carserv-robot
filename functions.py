@@ -1,6 +1,8 @@
 import mysql.connector
 from mysql.connector import MySQLConnection, Error
 import logging
+import datetime
+from datetime import timedelta
 
 dbconfig = {'host':'localhost', 'user':'root', 'password':'Umid_djan18072002', 'charset':'utf8mb4', 'database':'carserv'}
 
@@ -82,5 +84,38 @@ def check_location(chat_id):
 	a = cursor.fetchone()
 	if a:
 		print(a) #test
+		if a[0]:
+			date_in_base = a[0] + timedelta(minutes=1000)
+			date = datetime.datetime.utcnow() + timedelta(hours=5)
+			if date_in_base>date:
+				return True
+			else:
+				False
+		else:
+			False
+	else:
+		return False
+
+def set_location(chat_id, latitude, longitude):
+	date = datetime.datetime.utcnow() + timedelta(hours=5)
+	create_time = date.strftime('%Y-%m-%d %H:%M:%S')
+	cursor.execute("UPDATE users SET latitude={}, longitude={}, location_date='{}' WHERE user_id={}".format(latitude, longitude, create_time, chat_id))
+	conn.commit()
+	return True
+
+def get_elements(chat_id, type_element, page):
+	dictionary = {"moyka":3,
+				  "zapravka":2,
+				  "serv9ce":1}
+	page -=1
+	page *= 5
+	print(page)
+	if type_element == "all":
+		cursor.execute("SELECT *, (select latitude from carserv.users WHERE user_id={}) as l1, (select longitude from carserv.users WHERE user_id={}) as l2  FROM services right join location_connection on services.location_id=location_connection.id order by (abs(l1-latitude)+abs(l2-longitude)) asc limit {}, 5;".format(chat_id, chat_id, page))
+	else:
+		cursor.execute("SELECT *, (select latitude from carserv.users WHERE user_id={}) as l1, (select longitude from carserv.users WHERE user_id={}) as l2  FROM services cross join location_connection on services.location_id=location_connection.id having service_type={} order by (abs(l1-latitude)+abs(l2-longitude)) asc limit {}, 5;".format(chat_id, chat_id, dictionary[type_element], page))
+	a = cursor.fetchall()
+	if a:
+		return a
 	else:
 		return False

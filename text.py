@@ -8,3 +8,7 @@ request_phone = {"uz":"Raqamingizni kiriting",
 
 main_menu = {"uz":"Botimizga hush kelibsiz. Quyidagilarni tanlang:",
 			 "ru":"Botimizga hush kelibsiz. Quyidagilarni tanlang:"}
+
+request_location = {"uz":"Manzilingizni yuboring. Biz sizga yaqin qidiruvlarni topib beramiz",
+					"ru":"Manzilingizni yuboring. Biz sizga yaqin qidiruvlarni topib beramiz"}
+
