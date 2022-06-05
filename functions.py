@@ -81,6 +81,6 @@ def check_location(chat_id):
 	cursor.execute("SELECT `location_date`, `latitude`, `longitude` from users WHERE user_id={}".format(chat_id))
 	a = cursor.fetchone()
 	if a:
-		print(a)
+		print(a) #test
 	else:
 		return False
